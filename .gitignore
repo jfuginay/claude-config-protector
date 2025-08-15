@@ -1,0 +1,7 @@
+node_modules/
+*.log
+*.backup
+*.corrupt
+.DS_Store
+.env
+test-backup.json
