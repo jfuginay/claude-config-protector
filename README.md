@@ -1,8 +1,9 @@
 # Claude Config Protector 🛡️
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
+![Version](https://img.shields.io/npm/v/claude-config-protector.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS%20|%20Linux%20|%20Windows%20(WSL)-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
+![NPM Downloads](https://img.shields.io/npm/dt/claude-config-protector.svg)
 
 Protect your Claude Code from configuration corruption that causes crash loops and service unavailability.
 
@@ -27,11 +28,24 @@ This protector runs in the background and automatically:
 
 ## Quick Start
 
-### macOS / Linux
+### Install via npm (Recommended)
+
+```bash
+# Install globally
+npm install -g claude-config-protector
+
+# Start protection
+ccp start
+
+# Check status
+ccp status
+```
+
+### Install from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/claude-config-protector.git
+git clone https://github.com/jfuginay/claude-config-protector.git
 cd claude-config-protector
 
 # Run the installer
@@ -41,18 +55,17 @@ cd claude-config-protector
 ./test.sh
 ```
 
-### Windows (WSL)
+## CLI Commands
+
+Once installed, use the `ccp` command (or `claude-config-protector`):
 
 ```bash
-# In WSL terminal
-git clone https://github.com/yourusername/claude-config-protector.git
-cd claude-config-protector
-
-# Run the installer
-./install.sh
-
-# Add to startup (WSL)
-echo "node ~/claude-config-protector/protector.js &" >> ~/.bashrc
+ccp start      # Start the protector daemon
+ccp stop       # Stop the protector daemon
+ccp status     # Check if protector is running
+ccp fix        # Fix corrupted config file
+ccp backup     # Create a manual backup
+ccp help       # Show all commands
 ```
 
 ### Manual Installation
@@ -69,19 +82,12 @@ echo "node ~/claude-config-protector/protector.js &" >> ~/.bashrc
    # Download from https://nodejs.org
    ```
 
-2. **Clone and setup**:
+2. **Install via npm**:
    ```bash
-   git clone https://github.com/yourusername/claude-config-protector.git
-   cd claude-config-protector
-   npm install
+   npm install -g claude-config-protector
    ```
 
-3. **Run the protector**:
-   ```bash
-   node protector.js
-   ```
-
-4. **Set up auto-start** (optional):
+3. **Set up auto-start** (optional):
    
    **macOS (Launch Agent)**:
    ```bash
@@ -176,20 +182,8 @@ const CHECK_INTERVAL = 5000;        // Check frequency (5s default)
 ## Troubleshooting
 
 ### Check if protector is running
-
-**macOS**:
 ```bash
-launchctl list | grep claude.config
-```
-
-**Linux**:
-```bash
-systemctl --user status claude-protector
-```
-
-**All platforms**:
-```bash
-ps aux | grep protector.js
+ccp status
 ```
 
 ### View logs
@@ -197,9 +191,9 @@ ps aux | grep protector.js
 tail -f ~/.claude-backups/protector.log
 ```
 
-### Manually fix corrupted config
+### Fix corrupted config
 ```bash
-node fix-config.js
+ccp fix
 ```
 
 ### Emergency recovery

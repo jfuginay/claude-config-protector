@@ -1,12 +1,16 @@
 {
   "name": "claude-config-protector",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Protect Claude Code from configuration corruption",
   "main": "protector.js",
+  "bin": {
+    "claude-config-protector": "./cli.js",
+    "ccp": "./cli.js"
+  },
   "scripts": {
     "start": "node protector.js",
     "test": "./test.sh",
-    "install": "./install.sh",
+    "postinstall": "node postinstall.js",
     "fix": "node fix-config.js"
   },
   "keywords": [
@@ -18,17 +22,17 @@
     "backup",
     "recovery"
   ],
-  "author": "Community Contributors",
+  "author": "jfuginay",
   "license": "MIT",
   "engines": {
     "node": ">=14.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/claude-config-protector.git"
+    "url": "https://github.com/jfuginay/claude-config-protector.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/claude-config-protector/issues"
+    "url": "https://github.com/jfuginay/claude-config-protector/issues"
   },
-  "homepage": "https://github.com/yourusername/claude-config-protector#readme"
+  "homepage": "https://github.com/jfuginay/claude-config-protector#readme"
 }

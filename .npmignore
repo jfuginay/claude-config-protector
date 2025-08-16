@@ -1,0 +1,8 @@
+.git
+.gitignore
+*.log
+test.sh
+install.sh
+com.claude.config.protector.plist
+claude-protector.service
+.DS_Store
