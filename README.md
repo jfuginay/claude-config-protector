@@ -1,11 +1,15 @@
 # Claude Config Protector 🛡️
 
-![Version](https://img.shields.io/npm/v/claude-config-protector.svg)
+[![NPM Version](https://img.shields.io/npm/v/claude-config-protector.svg)](https://www.npmjs.com/package/claude-config-protector)
+[![NPM Downloads](https://img.shields.io/npm/dt/claude-config-protector.svg)](https://www.npmjs.com/package/claude-config-protector)
+[![GitHub Stars](https://img.shields.io/github/stars/jfuginay/claude-config-protector.svg)](https://github.com/jfuginay/claude-config-protector)
 ![Platform](https://img.shields.io/badge/platform-macOS%20|%20Linux%20|%20Windows%20(WSL)-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
-![NPM Downloads](https://img.shields.io/npm/dt/claude-config-protector.svg)
 
 Protect your Claude Code from configuration corruption that causes crash loops and service unavailability.
+
+**NPM Package:** https://www.npmjs.com/package/claude-config-protector  
+**GitHub Repo:** https://github.com/jfuginay/claude-config-protector
 
 ## The Problem
 

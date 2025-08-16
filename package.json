@@ -1,7 +1,7 @@
 {
   "name": "claude-config-protector",
   "version": "1.2.0",
-  "description": "Protect Claude Code from configuration corruption",
+  "description": "Protect Claude Code from configuration corruption that causes crash loops and service unavailability",
   "main": "protector.js",
   "bin": {
     "claude-config-protector": "./cli.js",
@@ -20,7 +20,10 @@
     "corruption",
     "protection",
     "backup",
-    "recovery"
+    "recovery",
+    "cli",
+    "daemon",
+    "monitor"
   ],
   "author": "jfuginay",
   "license": "MIT",
@@ -29,7 +32,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jfuginay/claude-config-protector.git"
+    "url": "git+https://github.com/jfuginay/claude-config-protector.git"
   },
   "bugs": {
     "url": "https://github.com/jfuginay/claude-config-protector/issues"
