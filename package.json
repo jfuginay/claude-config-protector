@@ -37,5 +37,8 @@
   "bugs": {
     "url": "https://github.com/jfuginay/claude-config-protector/issues"
   },
-  "homepage": "https://github.com/jfuginay/claude-config-protector#readme"
+  "homepage": "https://github.com/jfuginay/claude-config-protector#readme",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
 }
