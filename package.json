@@ -1,6 +1,6 @@
 {
   "name": "claude-config-protector",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Protect Claude Code from configuration corruption that causes crash loops and service unavailability",
   "main": "protector.js",
   "bin": {

@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
+const zlib = require('zlib');
 
 // Configuration
 const HOME = os.homedir();
@@ -67,7 +68,14 @@ function getFileSize(filePath) {
 
 function isValidJson(filePath) {
   try {
-    const content = fs.readFileSync(filePath, 'utf8');
+    let content;
+    if (filePath.endsWith('.gz')) {
+      // Decompress if gzipped
+      const compressed = fs.readFileSync(filePath);
+      content = zlib.gunzipSync(compressed).toString('utf8');
+    } else {
+      content = fs.readFileSync(filePath, 'utf8');
+    }
     JSON.parse(content);
     return true;
   } catch (error) {
@@ -79,13 +87,24 @@ function createBackup(reason = 'periodic') {
   if (!fs.existsSync(CONFIG_PATH)) {
     return null;
   }
-  
+
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const backupPath = path.join(BACKUP_DIR, `claude-${timestamp}.json`);
-  
+  const backupPath = path.join(BACKUP_DIR, `claude-${timestamp}.json.gz`);
+
   try {
-    fs.copyFileSync(CONFIG_PATH, backupPath);
-    log(`Created backup (${reason}): ${path.basename(backupPath)}`);
+    // Read and compress the config file
+    const content = fs.readFileSync(CONFIG_PATH);
+    const compressed = zlib.gzipSync(content);
+
+    // Calculate compression ratio
+    const originalSize = content.length;
+    const compressedSize = compressed.length;
+    const ratio = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+
+    // Write compressed backup
+    fs.writeFileSync(backupPath, compressed);
+    log(`Created backup (${reason}): ${path.basename(backupPath)} [${(originalSize/1024).toFixed(1)}KB → ${(compressedSize/1024).toFixed(1)}KB, ${ratio}% saved]`);
+
     rotateBackups();
     return backupPath;
   } catch (error) {
@@ -97,14 +116,14 @@ function createBackup(reason = 'periodic') {
 function rotateBackups() {
   try {
     const files = fs.readdirSync(BACKUP_DIR)
-      .filter(f => f.startsWith('claude-') && f.endsWith('.json'))
+      .filter(f => f.startsWith('claude-') && (f.endsWith('.json') || f.endsWith('.json.gz')))
       .map(f => ({
         name: f,
         path: path.join(BACKUP_DIR, f),
         time: fs.statSync(path.join(BACKUP_DIR, f)).mtime
       }))
       .sort((a, b) => b.time - a.time);
-    
+
     // Keep only the most recent backups
     if (files.length > MAX_BACKUPS) {
       for (let i = MAX_BACKUPS; i < files.length; i++) {
@@ -120,14 +139,14 @@ function rotateBackups() {
 function findLatestValidBackup() {
   try {
     const files = fs.readdirSync(BACKUP_DIR)
-      .filter(f => f.startsWith('claude-') && f.endsWith('.json'))
+      .filter(f => f.startsWith('claude-') && (f.endsWith('.json') || f.endsWith('.json.gz')))
       .map(f => ({
         name: f,
         path: path.join(BACKUP_DIR, f),
         time: fs.statSync(path.join(BACKUP_DIR, f)).mtime
       }))
       .sort((a, b) => b.time - a.time);
-    
+
     for (const file of files) {
       if (isValidJson(file.path)) {
         return file.path;
@@ -143,9 +162,18 @@ function recoverFromBackup() {
   const validBackup = findLatestValidBackup();
   if (validBackup) {
     try {
+      // Read and decompress if needed
+      let content;
+      if (validBackup.endsWith('.gz')) {
+        const compressed = fs.readFileSync(validBackup);
+        content = zlib.gunzipSync(compressed);
+      } else {
+        content = fs.readFileSync(validBackup);
+      }
+
       // Use atomic write for recovery
       const tempPath = `${CONFIG_PATH}.recovery.${Date.now()}`;
-      fs.copyFileSync(validBackup, tempPath);
+      fs.writeFileSync(tempPath, content);
       fs.renameSync(tempPath, CONFIG_PATH);
       log(`Recovered from backup: ${path.basename(validBackup)}`, 'WARN');
       return true;
@@ -157,47 +185,79 @@ function recoverFromBackup() {
   return false;
 }
 
+function analyzeConfigSize(config) {
+  const sizes = {};
+  for (const key in config) {
+    sizes[key] = JSON.stringify(config[key]).length;
+  }
+  return Object.entries(sizes).sort((a, b) => b[1] - a[1]);
+}
+
 function aggressiveTruncate(config) {
-  // Remove large data structures
+  // Analyze what's taking up space
+  const sizeAnalysis = analyzeConfigSize(config);
+  log(`Size analysis before truncation: ${sizeAnalysis.slice(0, 5).map(([k, v]) => `${k}:${(v/1024).toFixed(1)}KB`).join(', ')}`, 'DEBUG');
+
+  // Remove known bloat sources
+  delete config.cachedChangelog;
+  delete config.changelog;
+  delete config.releaseNotes;
+  delete config.testData;
+  delete config.debug;
+  delete config.temp;
+  delete config.cache;
+  delete config.recentFiles;
+  delete config.fileHistory;
+  delete config.searchHistory;
+  delete config.commandHistory;
+
+  // Aggressively clean projects
   if (config.projects) {
     for (const projectPath in config.projects) {
       const project = config.projects[projectPath];
-      
-      // Keep only last 10 history items
+
+      // Keep only last 3 history items instead of 10
       if (project.history && Array.isArray(project.history)) {
-        project.history = project.history.slice(-10);
+        project.history = project.history.slice(-3);
       }
-      
-      // Remove any cached data
+
+      // Keep only last 3 sessions
+      if (project.sessions && Array.isArray(project.sessions)) {
+        project.sessions = project.sessions.slice(-3);
+      }
+
+      // Remove all cached data
       delete project.cache;
       delete project.analysis;
       delete project.ast;
+      delete project.searchCache;
+      delete project.fileCache;
+      delete project.indexCache;
     }
   }
-  
-  // Clear tips history
+
+  // Limit tips history to only 10 most recent
   if (config.tipsHistory) {
     const recentTips = {};
     const tips = Object.entries(config.tipsHistory)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 20);
-    
+      .slice(0, 10);
+
     for (const [key, value] of tips) {
       recentTips[key] = value;
     }
     config.tipsHistory = recentTips;
   }
-  
-  // Remove any test data
-  delete config.testData;
-  delete config.debug;
-  delete config.temp;
-  
+
   // Remove old sessions
   if (config.sessions && Array.isArray(config.sessions)) {
-    config.sessions = config.sessions.slice(-10);
+    config.sessions = config.sessions.slice(-5);
   }
-  
+
+  // Log what we removed
+  const afterAnalysis = analyzeConfigSize(config);
+  log(`Size analysis after truncation: ${afterAnalysis.slice(0, 5).map(([k, v]) => `${k}:${(v/1024).toFixed(1)}KB`).join(', ')}`, 'DEBUG');
+
   return config;
 }
 

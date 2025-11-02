@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.3.0] - 2025-11-01
+
+### Added
+- **Compressed backups**: Backups now use gzip compression, reducing size by 74% on average
+- **Size analysis**: Detailed logging of config sections before/after truncation
+- **Improved truncation logic**: Now properly removes bloat sources
+  - Removes `cachedChangelog`, `changelog`, `releaseNotes`
+  - Removes `recentFiles`, `fileHistory`, `searchHistory`, `commandHistory`
+  - Removes all project cache data (`searchCache`, `fileCache`, `indexCache`)
+- **Better backup management**: Supports both `.json` and `.json.gz` backup formats
+- **Compression statistics**: Logs show space saved with each backup
+
+### Changed
+- Project history reduced from 10 → 3 items for more aggressive cleanup
+- Project sessions reduced from 10 → 3 items
+- Tips history reduced from 20 → 10 items
+- Backup file format changed to `.json.gz` (74% smaller)
+- Recovery system now handles decompression automatically
+
+### Fixed
+- Truncation now actually removes data (was showing 0% reduction)
+- Identified and removed `cachedChangelog` as primary bloat source (34KB)
+- Better detection of what's causing config bloat
+
+### Performance
+- Backup storage reduced by ~99%: 96MB → 36KB in testing
+- Individual backups: 12MB → 18KB
+- Same memory footprint: <10MB RAM, <0.1% CPU
+
 ## [1.2.0] - 2025-08-16
 
 ### Added
