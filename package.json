@@ -1,17 +1,27 @@
 {
   "name": "claude-config-protector",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "Protect Claude Code from configuration corruption that causes crash loops and service unavailability",
   "main": "protector.js",
   "bin": {
     "claude-config-protector": "./cli.js",
-    "ccp": "./cli.js"
+    "ccp": "./cli.js",
+    "claude-process-monitor": "./process-monitor.js",
+    "claude-conversation-monitor": "./conversation-monitor.js",
+    "claude-metrics-dashboard": "./metrics-dashboard.js"
   },
   "scripts": {
     "start": "node protector.js",
     "test": "./test.sh",
     "postinstall": "node postinstall.js",
-    "fix": "node fix-config.js"
+    "fix": "node fix-config.js",
+    "monitor": "node process-monitor.js",
+    "conversation-monitor": "node conversation-monitor.js",
+    "dashboard": "node metrics-dashboard.js"
+  },
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "blessed-contrib": "^4.11.0"
   },
   "keywords": [
     "claude",
@@ -39,6 +49,6 @@
   },
   "homepage": "https://github.com/jfuginay/claude-config-protector#readme",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   }
 }
