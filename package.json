@@ -1,5 +1,5 @@
 {
-  "name": "claude-config-protector",
+  "name": "@iesouskurios/claude-config-protector",
   "version": "2.0.0",
   "description": "Protect Claude Code from configuration corruption that causes crash loops and service unavailability",
   "main": "protector.js",
